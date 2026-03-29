@@ -26,6 +26,7 @@
       display: flex;
       align-items: center;
       gap: 20px;
+      z-index: 100;
     }
 
     .logo {
@@ -46,17 +47,17 @@
       background: #1f1f1f;
       border: 1px solid #3a0000;
       color: #ff9999;
-      padding: 10px 18px;
+      padding: 10px 20px;
       border-radius: 30px;
       cursor: pointer;
       font-size: 1rem;
       transition: all 0.3s;
     }
 
-    .nav-btn:hover {
-      background: #2a0000;
-      border-color: #ff1a1a;
+    .nav-btn:hover, .nav-btn.active {
+      background: linear-gradient(90deg, #c8102e, #ff1a1a);
       color: white;
+      border-color: #ff4d4d;
     }
 
     .search-header {
@@ -96,17 +97,62 @@
       cursor: pointer;
     }
 
-    .proxy-selector {
-      background: #1f1f1f;
-      border: 2px solid #3a0000;
-      color: #ff9999;
-      padding: 8px 14px;
-      border-radius: 30px;
-      font-size: 0.9rem;
+    .main-content {
+      flex: 1;
+      overflow: auto;
+      padding: 30px;
+      background: #0a0a0a;
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 25px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .game-card {
+      background: #111;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #3a0000;
+      transition: all 0.3s;
       cursor: pointer;
     }
 
+    .game-card:hover {
+      transform: translateY(-8px);
+      border-color: #ff1a1a;
+      box-shadow: 0 15px 30px rgba(255, 26, 26, 0.2);
+    }
+
+    .game-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .game-info {
+      padding: 15px;
+      text-align: center;
+    }
+
+    .game-info h3 {
+      color: #ff9999;
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+    }
+
+    .coming-soon {
+      text-align: center;
+      padding: 100px 20px;
+      color: #ff4d4d;
+      font-size: 2.5rem;
+    }
+
     .iframe-container {
+      display: none;
       flex: 1;
       background: #000;
       position: relative;
@@ -116,45 +162,6 @@
       width: 100%;
       height: 100%;
       border: none;
-    }
-
-    .overlay {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(10, 10, 10, 0.95);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      z-index: 30;
-    }
-
-    .overlay.hidden { display: none; }
-
-    .welcome, .coming-soon {
-      font-size: 2.8rem;
-      color: #ff4d4d;
-      margin-bottom: 12px;
-    }
-
-    .new-search-btn, .reload-proxy-btn {
-      position: absolute;
-      top: 18px;
-      right: 30px;
-      background: #3a0000;
-      color: #ff9999;
-      border: 1px solid #660000;
-      padding: 9px 18px;
-      border-radius: 30px;
-      cursor: pointer;
-      font-size: 0.95rem;
-      z-index: 40;
-    }
-
-    .reload-proxy-btn {
-      right: 180px;
-      background: #660000;
     }
 
     footer {
@@ -173,157 +180,161 @@
     <div class="logo">VIRGIN v1</div>
     
     <div class="nav-buttons">
+      <button class="nav-btn active" onclick="showSearch()">🔍 Search</button>
       <button class="nav-btn" onclick="showGames()">🖳 Games</button>
     </div>
 
-    <div class="search-header">
-      <input type="text" id="searchInput" placeholder="Paste link (now.gg works better now) or search Bing..." autocomplete="off">
+    <div class="search-header" id="searchBar">
+      <input type="text" id="searchInput" placeholder="Paste link or search with Bing..." autocomplete="off">
       <button class="search-btn" onclick="performSearch()">GO</button>
     </div>
-
-    <select id="proxySelect" class="proxy-selector" onchange="saveProxyChoice()">
-      <option value="direct">Direct</option>
-      <option value="corsproxy">corsproxy.io</option>
-      <option value="allorigins" selected>AllOrigins (best for now.gg)</option>
-      <option value="thingproxy">ThingProxy</option>
-    </select>
   </header>
 
-  <div class="iframe-container">
-    <button class="new-search-btn" onclick="newSearch()">NEW SEARCH</button>
-    <button class="reload-proxy-btn" onclick="reloadWithProxy()" id="reloadBtn" style="display:none;">🔄 RELOAD WITH PROXY</button>
-
-    <div class="overlay" id="overlay">
-      <div class="welcome">Virgin v1</div>
-      <p style="color:#ff9999; font-size:1.1rem;">Type a link or search term</p>
+  <!-- Search Mode -->
+  <div class="main-content" id="searchPage">
+    <div style="text-align:center; color:#ff9999; font-size:1.3rem; margin-top:80px;">
+      Search the web or paste any link below
     </div>
+  </div>
 
-    <!-- Games Coming Soon Overlay -->
-    <div class="overlay" id="gamesOverlay" style="display:none; background: rgba(10,10,10,0.98);">
-      <div class="coming-soon">🖳 Games Page</div>
-      <p style="color:#ff9999; font-size:1.2rem; text-align:center; max-width:400px;">
-        Coming Soon...<br><br>
-        Full games section with now.gg & more unblocked games will be here.
-      </p>
-      <button onclick="hideGames()" style="margin-top:30px; padding:12px 30px; background:#c8102e; border:none; border-radius:30px; color:white; font-size:1.1rem; cursor:pointer;">
-        Back to Search
-      </button>
+  <!-- Games Page -->
+  <div class="main-content" id="gamesPage" style="display:none;">
+    <div class="games-grid">
+      <!-- Game 1 -->
+      <div class="game-card" onclick="loadGame('cl1.html')">
+        <img src="https://cdn.comic.studio/images/32361/characters/2ea59e1fc49d9d41026fd937dcf3e579.png?filename=tile_0_1.png" alt="1">
+        <div class="game-info">
+          <h3>1</h3>
+        </div>
+      </div>
+
+      <!-- 10 Minutes Till Dawn -->
+      <div class="game-card" onclick="loadGame('cl10minutestildawn.html')">
+        <img src="https://imgs.crazygames.com/auto-covers/10-minutes-till-dawn_1x1.png?format=auto&quality=70&metadata=none" alt="10 Minutes Till Dawn">
+        <div class="game-info">
+          <h3>10 Minutes Till Dawn</h3>
+        </div>
+      </div>
+
+      <!-- 10-103 Null Kevin -->
+      <div class="game-card" onclick="loadGame('clnullkevin.html')">
+        <img src="https://www.freegameplanet.com/wp-content/uploads/2021/06/10-103-Null-Kelvin-game-download.jpg" alt="10-103 Null Kevin">
+        <div class="game-info">
+          <h3>10-103 Null Kevin</h3>
+        </div>
+      </div>
+
+      <!-- 12 Mini Battles -->
+      <div class="game-card" onclick="loadGame('cl12minibattles.html')">
+        <img src="https://gamebubu.com/uploads/allimg/210519/1-2105191636010-L.jpg" alt="12 Mini Battles">
+        <div class="game-info">
+          <h3>12 Mini Battles</h3>
+        </div>
+      </div>
+
+      <!-- 1v1.lol -->
+      <div class="game-card" onclick="loadGame('cl1v1maybeidk.html')">
+        <img src="https://cdn.now.gg/apps-content/com.nowgg.h5.pub501.app51614/game-tiles/1v1-lol.jpg" alt="1v1.lol">
+        <div class="game-info">
+          <h3>1v1.lol</h3>
+        </div>
+      </div>
+
+      <!-- 2048 -->
+      <div class="game-card" onclick="loadGame('cl2048.html')">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9M4Teb3aBhTsijACY6naZwakN-Jvo6HN8QQ&s" alt="2048">
+        <div class="game-info">
+          <h3>2048</h3>
+        </div>
+      </div>
+
+      <!-- 2048 Cupcakes -->
+      <div class="game-card" onclick="loadGame('cl2048cupcakes.html')">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBBDwj2yNBU0bH2ZEKv9oeG018DvzmKuz9TQ&s" alt="2048 Cupcakes">
+        <div class="game-info">
+          <h3>2048 Cupcakes</h3>
+        </div>
+      </div>
+
+      <!-- 2-3-4 Player Games -->
+      <div class="game-card" onclick="loadGame('cl234playergame.html')">
+        <img src="https://img.utdstc.com/icon/947/543/9475439c9b6732567cc92fe3b2aeff40094ea2bbf5beb6425551b6120b0c254b:200" alt="2-3-4 Player Games">
+        <div class="game-info">
+          <h3>2-3-4 Player Games</h3>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <iframe id="resultFrame" src="about:blank"></iframe>
+  <!-- Game Iframe Container -->
+  <div class="iframe-container" id="gameFrameContainer">
+    <button onclick="closeGame()" style="position:absolute; top:20px; right:30px; z-index:100; padding:10px 20px; background:#3a0000; color:#ff9999; border:none; border-radius:30px; cursor:pointer;">
+      ← Back to Games
+    </button>
+    <iframe id="gameFrame" src="about:blank"></iframe>
   </div>
 
   <footer>
-    Virgin v1 • Black &amp; Blood Red • Improved now.gg stability + Games Coming Soon
+    Virgin v1 • Black &amp; Blood Red Edition
   </footer>
 
   <script>
-    const PROXIES = {
-      direct: "",
-      corsproxy: "https://corsproxy.io/?",
-      allorigins: "https://api.allorigins.win/raw?url=",
-      thingproxy: "https://thingproxy.freeboard.io/fetch/"
-    };
-
-    let currentProxy = "allorigins";
-
-    function saveProxyChoice() {
-      currentProxy = document.getElementById('proxySelect').value;
-    }
-
-    function isNowggDomain(url) {
-      return /nowgg\.fun|ip\.nowgg/i.test(url);
-    }
-
-    function isUrlLike(str) {
-      str = str.trim();
-      if (!str) return false;
-      return /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z0-9]+(\/.*)?$/i.test(str) ||
-             (str.includes('.') && !str.includes(' ') && str.length > 8);
-    }
-
-    function getProxiedUrl(target) {
-      if (currentProxy === "direct") return target;
-      return PROXIES[currentProxy] + encodeURIComponent(target);
-    }
-
-    function performSearch() {
-      let input = document.getElementById('searchInput').value.trim();
-      if (!input) return;
-
-      let target = isUrlLike(input) 
-        ? (input.startsWith('http') ? input : 'https://' + input)
-        : `https://www.bing.com/search?q=${encodeURIComponent(input)}`;
-
-      document.getElementById('overlay').classList.add('hidden');
-      document.getElementById('gamesOverlay').style.display = 'none';
-
-      const iframe = document.getElementById('resultFrame');
-
-      if (isNowggDomain(target)) {
-        currentProxy = "allorigins";                    // Force best proxy for now.gg
-        document.getElementById('proxySelect').value = "allorigins";
-        iframe.src = getProxiedUrl(target);
-        document.getElementById('reloadBtn').style.display = 'block';
-      } else {
-        iframe.src = getProxiedUrl(target);
-        document.getElementById('reloadBtn').style.display = 'none';
-      }
-    }
-
-    function reloadWithProxy() {
-      const iframe = document.getElementById('resultFrame');
-      let currentSrc = iframe.src;
-
-      // Cycle to next proxy
-      const keys = Object.keys(PROXIES);
-      let idx = keys.indexOf(currentProxy);
-      currentProxy = keys[(idx + 1) % keys.length];
-      document.getElementById('proxySelect').value = currentProxy;
-
-      if (currentSrc.includes('http')) {
-        // Extract original URL and reload through new proxy
-        let original = currentSrc;
-        if (currentSrc.includes('?url=')) original = decodeURIComponent(currentSrc.split('?url=')[1] || currentSrc.split('?')[1]);
-        iframe.src = getProxiedUrl(original);
-      }
-    }
-
-    function newSearch() {
-      document.getElementById('searchInput').value = '';
-      document.getElementById('overlay').classList.remove('hidden');
-      document.getElementById('gamesOverlay').style.display = 'none';
-      document.getElementById('resultFrame').src = 'about:blank';
-      document.getElementById('reloadBtn').style.display = 'none';
-      document.getElementById('searchInput').focus();
+    function showSearch() {
+      document.getElementById('searchPage').style.display = 'block';
+      document.getElementById('gamesPage').style.display = 'none';
+      document.getElementById('gameFrameContainer').style.display = 'none';
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.nav-btn')[0].classList.add('active');
     }
 
     function showGames() {
-      document.getElementById('gamesOverlay').style.display = 'flex';
-      document.getElementById('overlay').classList.add('hidden');
-      document.getElementById('resultFrame').src = 'about:blank';
+      document.getElementById('searchPage').style.display = 'none';
+      document.getElementById('gamesPage').style.display = 'block';
+      document.getElementById('gameFrameContainer').style.display = 'none';
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.nav-btn')[1].classList.add('active');
     }
 
-    function hideGames() {
-      document.getElementById('gamesOverlay').style.display = 'none';
-      document.getElementById('overlay').classList.remove('hidden');
+    function loadGame(filename) {
+      document.getElementById('gamesPage').style.display = 'none';
+      document.getElementById('gameFrameContainer').style.display = 'flex';
+      document.getElementById('gameFrame').src = filename;
     }
 
-    // Enter key support
+    function closeGame() {
+      document.getElementById('gameFrame').src = 'about:blank';
+      document.getElementById('gameFrameContainer').style.display = 'none';
+      document.getElementById('gamesPage').style.display = 'block';
+    }
+
+    // Search functionality (kept simple)
+    function performSearch() {
+      const query = document.getElementById('searchInput').value.trim();
+      if (!query) return;
+      
+      let url = isUrlLike(query) 
+        ? (query.startsWith('http') ? query : 'https://' + query)
+        : `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+
+      // For now we just alert - you can expand later
+      alert("Search opened in new tab:\n" + url);
+      window.open(url, '_blank');
+    }
+
+    function isUrlLike(str) {
+      return /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z0-9]+/i.test(str);
+    }
+
+    // Keyboard support
     document.getElementById('searchInput').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') performSearch();
     });
 
+    // Start on Search page
     window.onload = () => {
+      showSearch();
       document.getElementById('searchInput').focus();
-      const saved = localStorage.getItem('virginProxy') || 'allorigins';
-      currentProxy = saved;
-      document.getElementById('proxySelect').value = saved;
     };
-
-    window.addEventListener('beforeunload', () => {
-      localStorage.setItem('virginProxy', currentProxy);
-    });
   </script>
 </body>
 </html>
