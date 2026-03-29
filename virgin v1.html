@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virgin v1</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #111;
+      border-bottom: 2px solid #3a0000;
+      padding: 15px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: -1px;
+      background: linear-gradient(90deg, #ff1a1a, #c8102e, #ff4d4d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .search-header {
+      flex: 1;
+      max-width: 720px;
+      margin: 0 30px;
+      position: relative;
+    }
+
+    .search-header input {
+      width: 100%;
+      padding: 14px 20px;
+      padding-right: 120px;
+      font-size: 1.15rem;
+      background: #1a1a1a;
+      border: 2px solid #3a0000;
+      border-radius: 50px;
+      color: white;
+      outline: none;
+    }
+
+    .search-header input:focus {
+      border-color: #ff1a1a;
+      box-shadow: 0 0 0 3px rgba(255, 26, 26, 0.25);
+    }
+
+    .search-btn {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: linear-gradient(90deg, #c8102e, #ff1a1a);
+      color: white;
+      border: none;
+      padding: 11px 26px;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .iframe-container {
+      flex: 1;
+      background: #000;
+      position: relative;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(10, 10, 10, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 10;
+      transition: opacity 0.4s;
+    }
+
+    .overlay.hidden { opacity: 0; pointer-events: none; }
+
+    .welcome {
+      font-size: 2.8rem;
+      color: #ff4d4d;
+      margin-bottom: 10px;
+    }
+
+    footer {
+      background: #111;
+      padding: 12px;
+      text-align: center;
+      color: #660000;
+      font-size: 0.9rem;
+      border-top: 1px solid #3a0000;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">VIRGIN v1</div>
+    
+    <div class="search-header">
+      <input type="text" id="searchInput" placeholder="Search with Bing or paste a direct link..." autocomplete="off">
+      <button class="search-btn" onclick="performSearch()">GO</button>
+    </div>
+  </header>
+
+  <div class="iframe-container">
+    <div class="overlay" id="overlay">
+      <div class="welcome">Virgin v1</div>
+      <p style="color:#ff9999; font-size:1.1rem;">Type something or paste a link below</p>
+    </div>
+    <iframe id="resultFrame" src="about:blank"></iframe>
+  </div>
+
+  <footer>
+    Virgin v1 • Black &amp; Blood Red • Bing Only • Direct Links Supported
+  </footer>
+
+  <script>
+    function isValidUrl(string) {
+      try {
+        const url = new URL(string);
+        return url.protocol === "http:" || url.protocol === "https:";
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function performSearch() {
+      let input = document.getElementById('searchInput').value.trim();
+      if (!input) return;
+
+      let targetUrl = "";
+
+      // If user pastes a full link → load it directly
+      if (isValidUrl(input)) {
+        targetUrl = input;
+      } 
+      // Otherwise → search on Bing
+      else {
+        targetUrl = `https://www.bing.com/search?q=${encodeURIComponent(input)}`;
+      }
+
+      // Hide welcome screen
+      document.getElementById('overlay').classList.add('hidden');
+
+      // Load inside iframe
+      document.getElementById('resultFrame').src = targetUrl;
+    }
+
+    // Press Enter to go
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        performSearch();
+      }
+    });
+
+    // Focus on load
+    window.onload = () => {
+      document.getElementById('searchInput').focus();
+    };
+  </script>
+</body>
+</html>
