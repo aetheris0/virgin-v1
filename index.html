@@ -113,13 +113,14 @@
       flex: 1;
       overflow: auto;
       padding: 40px 30px;
+      background: #0a0a0a;
     }
 
     .games-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
       gap: 28px;
-      max-width: 1400px;
+      max-width: 1600px;
       margin: 0 auto;
     }
 
@@ -167,18 +168,18 @@
       border: none;
     }
 
-    .force-proxy-btn {
+    .back-btn {
       position: absolute;
       top: 25px;
-      right: 180px;
-      background: #660000;
-      color: #ffcccc;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 30px;
-      cursor: pointer;
+      right: 30px;
       z-index: 200;
-      display: none;
+      padding: 12px 24px;
+      background: #3a0000;
+      color: #ff9999;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: 600;
     }
 
     footer {
@@ -207,27 +208,24 @@
     </div>
 
     <select id="proxySelect" class="proxy-selector" onchange="changeProxy()">
-      <option value="direct">Direct (no proxy)</option>
-      <option value="corsproxy" selected>corsproxy.io (fast)</option>
+      <option value="direct">Direct</option>
+      <option value="corsproxy" selected>corsproxy.io</option>
       <option value="codetabs">codetabs.com</option>
       <option value="thingproxy">ThingProxy</option>
     </select>
   </header>
 
-  <!-- Search / Main Area -->
-  <div class="main-content" id="mainContent">
-    <!-- Games or search content will go here via JS -->
-  </div>
+  <!-- Main Area (Search or Games) -->
+  <div class="main-content" id="mainContent"></div>
 
-  <!-- Game / Link Viewer -->
+  <!-- Iframe for Games / Links -->
   <div class="iframe-container" id="iframeContainer">
-    <button onclick="closeIframe()" style="position:absolute;top:25px;right:30px;z-index:300;padding:12px 24px;background:#3a0000;color:#ff9999;border:none;border-radius:50px;cursor:pointer;">← Back</button>
-    <button class="force-proxy-btn" id="forceProxyBtn" onclick="forceReloadWithProxy()">🔄 Force Proxy</button>
+    <button class="back-btn" onclick="closeIframe()">← Back to Games</button>
     <iframe id="mainFrame" src="about:blank"></iframe>
   </div>
 
   <footer>
-    Virgin v1 • Black &amp; Blood Red • Updated Proxies 2026
+    Virgin v1 • Black &amp; Blood Red Edition
   </footer>
 
   <script>
@@ -257,58 +255,71 @@
 
       document.getElementById('mainContent').style.display = 'none';
       document.getElementById('iframeContainer').style.display = 'flex';
-      document.getElementById('forceProxyBtn').style.display = 'none';
 
       document.getElementById('mainFrame').src = getProxiedUrl(target);
     }
 
-    function forceReloadWithProxy() {
-      const iframe = document.getElementById('mainFrame');
-      let currentSrc = iframe.src;
+    function showSearch() {
+      document.getElementById('mainContent').style.display = 'block';
+      document.getElementById('iframeContainer').style.display = 'none';
+      document.getElementById('mainContent').innerHTML = `
+        <div style="text-align:center; margin-top:120px; color:#ff9999;">
+          <h2 style="font-size:2.5rem; margin-bottom:20px;">Virgin v1</h2>
+          <p style="font-size:1.4rem;">Paste any link or use the Games tab</p>
+        </div>`;
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.nav-btn')[0].classList.add('active');
+    }
 
-      // Cycle proxy
-      const keys = Object.keys(PROXIES);
-      let idx = keys.indexOf(currentProxy);
-      currentProxy = keys[(idx + 1) % keys.length];
-      document.getElementById('proxySelect').value = currentProxy;
+    function showGames() {
+      document.getElementById('mainContent').style.display = 'block';
+      document.getElementById('iframeContainer').style.display = 'none';
 
-      // Reload with new proxy
-      let originalUrl = currentSrc;
-      if (currentSrc.includes('?')) {
-        originalUrl = decodeURIComponent(currentSrc.split('=')[1] || currentSrc);
-      }
-      iframe.src = getProxiedUrl(originalUrl);
+      const gamesHTML = `
+        <div class="games-grid">
+          <!-- Original Games -->
+          <div class="game-card" onclick="loadGame('cl1.html')"><img src="https://cdn.comic.studio/images/32361/characters/2ea59e1fc49d9d41026fd937dcf3e579.png?filename=tile_0_1.png" alt="1"><div class="game-info"><h3>1</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl10minutestildawn.html')"><img src="https://imgs.crazygames.com/auto-covers/10-minutes-till-dawn_1x1.png?format=auto&quality=70&metadata=none" alt="10 min"><div class="game-info"><h3>10 Minutes Till Dawn</h3></div></div>
+          <div class="game-card" onclick="loadGame('clnullkevin.html')"><img src="https://www.freegameplanet.com/wp-content/uploads/2021/06/10-103-Null-Kelvin-game-download.jpg" alt="null kevin"><div class="game-info"><h3>10-103 Null Kevin</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl12minibattles.html')"><img src="https://gamebubu.com/uploads/allimg/210519/1-2105191636010-L.jpg" alt="12 mini"><div class="game-info"><h3>12 Mini Battles</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl1v1maybeidk.html')"><img src="https://cdn.now.gg/apps-content/com.nowgg.h5.pub501.app51614/game-tiles/1v1-lol.jpg" alt="1v1"><div class="game-info"><h3>1v1.lol</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl2048.html')"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9M4Teb3aBhTsijACY6naZwakN-Jvo6HN8QQ&s" alt="2048"><div class="game-info"><h3>2048</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl2048cupcakes.html')"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBBDwj2yNBU0bH2ZEKv9oeG018DvzmKuz9TQ&s" alt="cupcakes"><div class="game-info"><h3>2048 Cupcakes</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl234playergame.html')"><img src="https://img.utdstc.com/icon/947/543/9475439c9b6732567cc92fe3b2aeff40094ea2bbf5beb6425551b6120b0c254b:200" alt="234"><div class="game-info"><h3>2-3-4 Player Games</h3></div></div>
+
+          <!-- New Games -->
+          <div class="game-card" onclick="loadGame('cl20smallmazes.html')"><img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2570630/04d2ec49a79d3c9802bf194d9c3ae88d6707bdf0/capsule_616x353.jpg?t=1773335949" alt="20 mazes"><div class="game-info"><h3>20 Small Mazes</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl2doom.html')"><img src="https://files.kidsearch.games/game/0d2/706/0d270652d61551ef/images/240/2doom.jpg" alt="2doom"><div class="game-info"><h3>2Doom</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl2Dshooting.html')"><img src="https://i.ytimg.com/vi/G6g94Db6ulQ/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLCd3B3-FKan8Z1WAdFn9Vz2AbUIFQ" alt="2d shooting"><div class="game-info"><h3>2D Shooting</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl3dash.html')"><img src="https://geometrydashfullversion.io/data/image/game/3dash.jpg" alt="3dash"><div class="game-info"><h3>3Dash</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl3dasheditor.html')"><img src="https://img.gamedistribution.com/ba08d794f5c84775b848781e70497849-512x512.jpg" alt="3dash editor"><div class="game-info"><h3>3Dash Editor</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl3dpinballspacecadet.html')"><img src="https://m.media-amazon.com/images/M/MV5BYmNmZmRiOWQtY2E0Mi00YTgyLTk2ZTEtMmI4ZTY0NTMzZWMxXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg" alt="pinball"><div class="game-info"><h3>3D Pinball Space Cadet</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl4thandgoal.html')"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR19be3cYKqDSByCD8R9rieQR0_sw5lvbd7rA&s" alt="4th goal"><div class="game-info"><h3>4th And Goal</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl500calibercontractz.html')"><img src="https://i1.sndcdn.com/artworks-mWYMyotTxyhPxyye-yG0zVQ-t500x500.jpg" alt="500 caliber"><div class="game-info"><h3>500 Caliber Contractz</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl8ballclassic.html')"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-diQgsIhwUsq0lEJIwzQOUiwRAemjreQHaw&s" alt="8 ball"><div class="game-info"><h3>8 Ball Classic</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl9007199254740992.html')"><img src="https://i.ytimg.com/vi/v8pC-2CsF1M/maxresdefault.jpg" alt="9007199"><div class="game-info"><h3>9007199254740992</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl99balls.html')"><img src="https://99balls3d.h5games.usercontent.goog/v/0b35ksethbio8/images/big_icon.jpeg" alt="99 balls"><div class="game-info"><h3>99 Balls</h3></div></div>
+          <div class="game-card" onclick="loadGame('cl99nightsitf.html')"><img src="https://preview.redd.it/what-exactly-is-wrong-with-99-nights-in-the-forest-v0-6t0r19b0xkuf1.jpeg?width=640&crop=smart&auto=webp&s=17aef1ec55ffccc59fe328afbdbc5442b772a328" alt="99 nights"><div class="game-info"><h3>99 Nights In The Forest</h3></div></div>
+        </div>`;
+
+      document.getElementById('mainContent').innerHTML = gamesHTML;
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.nav-btn')[1].classList.add('active');
+    }
+
+    function loadGame(filename) {
+      document.getElementById('mainContent').style.display = 'none';
+      document.getElementById('iframeContainer').style.display = 'flex';
+      document.getElementById('mainFrame').src = filename;
     }
 
     function closeIframe() {
       document.getElementById('mainFrame').src = 'about:blank';
       document.getElementById('iframeContainer').style.display = 'none';
-      document.getElementById('mainContent').style.display = 'block';
-      document.getElementById('forceProxyBtn').style.display = 'none';
+      showGames(); // Return to games page
     }
 
-    // Games Section (placeholder - add your game cards here later)
-    function showGames() {
-      document.getElementById('mainContent').innerHTML = `
-        <div style="text-align:center; color:#ff4d4d; font-size:2.5rem; margin-top:100px;">
-          🖳 Games Page<br><br>
-          <span style="font-size:1.4rem; color:#ff9999;">Coming Soon - Add your game cards here</span>
-        </div>`;
-      document.getElementById('mainContent').style.display = 'block';
-      document.getElementById('iframeContainer').style.display = 'none';
-    }
-
-    function showSearch() {
-      document.getElementById('mainContent').innerHTML = `
-        <div style="text-align:center; margin-top:120px; color:#ff9999;">
-          <h2 style="font-size:2.5rem;">Virgin v1</h2>
-          <p style="font-size:1.4rem;">Paste any link above</p>
-        </div>`;
-      document.getElementById('mainContent').style.display = 'block';
-      document.getElementById('iframeContainer').style.display = 'none';
-    }
-
-    // Enter key support
+    // Enter key
     document.getElementById('searchInput').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') performSearch();
     });
