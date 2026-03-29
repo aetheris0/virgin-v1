@@ -37,6 +37,28 @@
       -webkit-text-fill-color: transparent;
     }
 
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      background: #1f1f1f;
+      border: 1px solid #3a0000;
+      color: #ff9999;
+      padding: 10px 18px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+
+    .nav-btn:hover {
+      background: #2a0000;
+      border-color: #ff1a1a;
+      color: white;
+    }
+
     .search-header {
       flex: 1;
       max-width: 720px;
@@ -100,17 +122,17 @@
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(10, 10, 10, 0.92);
+      background: rgba(10, 10, 10, 0.95);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-direction: column;
-      z-index: 20;
+      z-index: 30;
     }
 
     .overlay.hidden { display: none; }
 
-    .welcome {
+    .welcome, .coming-soon {
       font-size: 2.8rem;
       color: #ff4d4d;
       margin-bottom: 12px;
@@ -127,7 +149,7 @@
       border-radius: 30px;
       cursor: pointer;
       font-size: 0.95rem;
-      z-index: 30;
+      z-index: 40;
     }
 
     .reload-proxy-btn {
@@ -150,37 +172,52 @@
   <header>
     <div class="logo">VIRGIN v1</div>
     
+    <div class="nav-buttons">
+      <button class="nav-btn" onclick="showGames()">🖳 Games</button>
+    </div>
+
     <div class="search-header">
-      <input type="text" id="searchInput" placeholder="Paste link or search Bing..." autocomplete="off">
+      <input type="text" id="searchInput" placeholder="Paste link (now.gg works better now) or search Bing..." autocomplete="off">
       <button class="search-btn" onclick="performSearch()">GO</button>
     </div>
 
     <select id="proxySelect" class="proxy-selector" onchange="saveProxyChoice()">
-      <option value="direct">Direct (no proxy)</option>
-      <option value="corsproxy" selected>corsproxy.io (fast)</option>
-      <option value="allorigins">AllOrigins (best for now.gg)</option>
-      <option value="thingproxy">ThingProxy (higher limits)</option>
+      <option value="direct">Direct</option>
+      <option value="corsproxy">corsproxy.io</option>
+      <option value="allorigins" selected>AllOrigins (best for now.gg)</option>
+      <option value="thingproxy">ThingProxy</option>
     </select>
   </header>
 
   <div class="iframe-container">
     <button class="new-search-btn" onclick="newSearch()">NEW SEARCH</button>
-    <button class="reload-proxy-btn" onclick="reloadWithProxy()" id="reloadBtn" style="display:none;">RELOAD WITH PROXY</button>
+    <button class="reload-proxy-btn" onclick="reloadWithProxy()" id="reloadBtn" style="display:none;">🔄 RELOAD WITH PROXY</button>
 
     <div class="overlay" id="overlay">
       <div class="welcome">Virgin v1</div>
       <p style="color:#ff9999; font-size:1.1rem;">Type a link or search term</p>
     </div>
 
+    <!-- Games Coming Soon Overlay -->
+    <div class="overlay" id="gamesOverlay" style="display:none; background: rgba(10,10,10,0.98);">
+      <div class="coming-soon">🖳 Games Page</div>
+      <p style="color:#ff9999; font-size:1.2rem; text-align:center; max-width:400px;">
+        Coming Soon...<br><br>
+        Full games section with now.gg & more unblocked games will be here.
+      </p>
+      <button onclick="hideGames()" style="margin-top:30px; padding:12px 30px; background:#c8102e; border:none; border-radius:30px; color:white; font-size:1.1rem; cursor:pointer;">
+        Back to Search
+      </button>
+    </div>
+
     <iframe id="resultFrame" src="about:blank"></iframe>
   </div>
 
   <footer>
-    Virgin v1 • Black &amp; Blood Red • Fixed now.gg IP switching + multiple proxies
+    Virgin v1 • Black &amp; Blood Red • Improved now.gg stability + Games Coming Soon
   </footer>
 
   <script>
-    // === MULTIPLE PROXIES (fixes 1MB limit & more sites) ===
     const PROXIES = {
       direct: "",
       corsproxy: "https://corsproxy.io/?",
@@ -188,14 +225,14 @@
       thingproxy: "https://thingproxy.freeboard.io/fetch/"
     };
 
-    let currentProxy = "allorigins"; // best default for now.gg
+    let currentProxy = "allorigins";
 
     function saveProxyChoice() {
       currentProxy = document.getElementById('proxySelect').value;
     }
 
     function isNowggDomain(url) {
-      return url.includes('nowgg.fun') || url.includes('.ip.nowgg');
+      return /nowgg\.fun|ip\.nowgg/i.test(url);
     }
 
     function isUrlLike(str) {
@@ -214,29 +251,21 @@
       let input = document.getElementById('searchInput').value.trim();
       if (!input) return;
 
-      let target = "";
+      let target = isUrlLike(input) 
+        ? (input.startsWith('http') ? input : 'https://' + input)
+        : `https://www.bing.com/search?q=${encodeURIComponent(input)}`;
 
-      if (isUrlLike(input)) {
-        if (!input.startsWith('http')) target = 'https://' + input;
-        else target = input;
-      } else {
-        target = `https://www.bing.com/search?q=${encodeURIComponent(input)}`;
-      }
-
-      // Hide overlay
       document.getElementById('overlay').classList.add('hidden');
+      document.getElementById('gamesOverlay').style.display = 'none';
 
       const iframe = document.getElementById('resultFrame');
 
-      // If it's a now.gg link → ALWAYS use proxy (fixes IP switching)
       if (isNowggDomain(target)) {
-        currentProxy = "allorigins"; // force best proxy for now.gg
+        currentProxy = "allorigins";                    // Force best proxy for now.gg
         document.getElementById('proxySelect').value = "allorigins";
         iframe.src = getProxiedUrl(target);
         document.getElementById('reloadBtn').style.display = 'block';
-      } 
-      // Normal link or Bing search
-      else {
+      } else {
         iframe.src = getProxiedUrl(target);
         document.getElementById('reloadBtn').style.display = 'none';
       }
@@ -244,43 +273,54 @@
 
     function reloadWithProxy() {
       const iframe = document.getElementById('resultFrame');
-      const currentSrc = iframe.src;
+      let currentSrc = iframe.src;
 
-      // Try next proxy in rotation
+      // Cycle to next proxy
       const keys = Object.keys(PROXIES);
       let idx = keys.indexOf(currentProxy);
       currentProxy = keys[(idx + 1) % keys.length];
       document.getElementById('proxySelect').value = currentProxy;
 
-      // Reload the current page through the new proxy
       if (currentSrc.includes('http')) {
-        const realUrl = currentSrc.split('?url=')[1] || currentSrc.split('?')[1] || currentSrc;
-        iframe.src = getProxiedUrl(decodeURIComponent(realUrl));
+        // Extract original URL and reload through new proxy
+        let original = currentSrc;
+        if (currentSrc.includes('?url=')) original = decodeURIComponent(currentSrc.split('?url=')[1] || currentSrc.split('?')[1]);
+        iframe.src = getProxiedUrl(original);
       }
     }
 
     function newSearch() {
       document.getElementById('searchInput').value = '';
       document.getElementById('overlay').classList.remove('hidden');
+      document.getElementById('gamesOverlay').style.display = 'none';
       document.getElementById('resultFrame').src = 'about:blank';
       document.getElementById('reloadBtn').style.display = 'none';
       document.getElementById('searchInput').focus();
     }
 
-    // Enter key
+    function showGames() {
+      document.getElementById('gamesOverlay').style.display = 'flex';
+      document.getElementById('overlay').classList.add('hidden');
+      document.getElementById('resultFrame').src = 'about:blank';
+    }
+
+    function hideGames() {
+      document.getElementById('gamesOverlay').style.display = 'none';
+      document.getElementById('overlay').classList.remove('hidden');
+    }
+
+    // Enter key support
     document.getElementById('searchInput').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') performSearch();
     });
 
     window.onload = () => {
       document.getElementById('searchInput').focus();
-      // Load user's last proxy choice
       const saved = localStorage.getItem('virginProxy') || 'allorigins';
       currentProxy = saved;
       document.getElementById('proxySelect').value = saved;
     };
 
-    // Save proxy choice
     window.addEventListener('beforeunload', () => {
       localStorage.setItem('virginProxy', currentProxy);
     });
